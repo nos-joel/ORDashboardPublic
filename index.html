@@ -194,6 +194,7 @@ body{
     </style>
     <meta charset="UTF-8" />
     <title>OR Dashboard</title>
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     
@@ -201,9 +202,11 @@ body{
 	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 	<!--<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
 
-	<link rel="stylesheet" href="https://unpkg.com/tableexport@5.2.0/dist/css/tableexport.min.css">
+	<link rel="stylesheet" href="https://unpkg.com/tableexport@5.2.0/dist/css/tableexport.min.css"/>
 	<!-- <link rel="stylesheet" href="https://www.bancopopular.com/cibp-web/css/mibanco-default-scheme.css"> -->
-
+	
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   </head>
     <body>
 		<!--	<script src="https://raw.githubusercontent.com/SheetJS/js-xlsx/master/dist/xlsx.core.min.js"></script> -->
@@ -426,14 +429,17 @@ body{
                     htmlToRender = <a>{sText}</a>
                     break;
                 case "h1":
-                    htmlToRender = <h1>{sText}</h1>
+                    htmlToRender = <h4>{sText}</h4>
                     break;
                 case "h2":
-                    htmlToRender = <h2>{sText}</h2>
+                    htmlToRender = <h4>{sText}</h4>
                     break;
                 case "h3":
-                    htmlToRender = <h3>{sText}</h3>
+                    htmlToRender = <h4>{sText}</h4>
                     break;
+				case "h4":
+                    htmlToRender = <h4>{sText}</h4>
+                    break;	
                 default:
                     htmlToRender = <p>{sText}</p>
                     console.log(sHtmlTag, " not recognized");
@@ -501,7 +507,7 @@ body{
 									oObject.name = oNodes[cn].getAttribute("Name");
 									oObject.type = "element";
 									oObject.text = "";
-									oObject.html = "";
+									oObject.html = <p>N/A</p>
 									aObjects.push(oObject);
 									oObject = {};
 									break;
@@ -526,6 +532,7 @@ body{
 								case "WebList":
 									oObject.name = oNodes[cn].getAttribute("Name");
 									oObject.type = "element";
+									oObject.html = <p>N/A</p>
 									aObjects.push(oObject);
 									oObject = {};
 								
@@ -533,6 +540,7 @@ body{
 								case "WebRadioGroup":
 									oObject.name = oNodes[cn].getAttribute("Name");
 									oObject.type = "element";
+									oObject.html = <p>N/A</p>
 									aObjects.push(oObject);
 									oObject = {};
 								
@@ -565,6 +573,7 @@ body{
 								case "WebEdit":
 									oObject.name = oNodes[cn].getAttribute("Name");
 									oObject.type = "element";
+									oObject.html = <p>N/A</p>
 									aObjects.push(oObject);
 									oObject = {};
 
@@ -572,6 +581,7 @@ body{
 								case "WebTable":
 									oObject.name = oNodes[cn].getAttribute("Name");
 									oObject.type = "element";
+									oObject.html = <p>N/A</p>
 									aObjects.push(oObject);
 									oObject = {};
 
@@ -579,6 +589,7 @@ body{
 								case "WebCheckBox":
 									oObject.name = oNodes[cn].getAttribute("Name");
 									oObject.type = "element";
+									oObject.html = <p>N/A</p>
 									aObjects.push(oObject);
 									oObject = {};
 
@@ -843,7 +854,7 @@ body{
 
 						oElementsToDisplay.push(
 							<tr key={iGlobalKeyCounter}>
-								<td>{sFrameName + " | " + oFrameChildObjects[fco].name}<hr />{"text: " + oFrameChildObjects[fco].text}<hr />{oFrameChildObjects[fco].html}</td>
+								<td>{sFrameName + " | " + oFrameChildObjects[fco].name}<hr />{oFrameChildObjects[fco].html}</td>
 								<td><div className="addCase" onClick={() => this.addCase(sNameToAddCase)}>Add</div></td>
 							</tr>
 						);
@@ -852,7 +863,7 @@ body{
 				else {
 					oElementsToDisplay.push(
 						<tr key={iGlobalKeyCounter}>
-							<td>{oAllElements[el].name}<hr />{"text: " + oAllElements[el].text}<hr />{oAllElements[el].html}</td>
+							<td>{oAllElements[el].name}<hr />{oAllElements[el].html}</td>
 							<td><div className="addCase" onClick={() => this.addCase(oAllElements[el].name)}>Add</div></td>
 						</tr>
 					);
@@ -929,6 +940,9 @@ body{
 	}
 
 	class CaseTable extends React.Component{
+		componentDidMount(){
+			$("#toEx tbody").sortable();
+		}
         render(){
 			this.delCase = this.props.delCase;
 			
@@ -972,6 +986,7 @@ body{
       );
 
     </script>
+
 	<script src="https://rawgit.com/SheetJS/js-xlsx/master/dist/xlsx.core.min.js"></script>
 	<script src="https://rawgit.com/clarketm/FileSaver.js/master/FileSaver.min.js"></script>
 	<script src="https://rawgit.com/clarketm/TableExport/master/src/stable/js/tableexport.min.js"></script>
