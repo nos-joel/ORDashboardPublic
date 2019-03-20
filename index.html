@@ -1,5 +1,973 @@
+<!DOCTYPE html>
 <html>
-<body>
-<p>hola</p>
-</body>
+	<!--
+		************************************
+			Author: Joel Garcia
+		************************************
+			Notes: This tool make use of open source libraries such as:
+				ReactJS[react & react-dom]
+				Babel
+				FileSaver
+				TableExport
+				SheetJS xlsx.core
+	-->
+  <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+	.bluelabel {
+		margin: 0 0 10px 0;
+		color:#004085;background-color:#cce5ff;border-color:#b8daff;
+		color: #004085;
+		padding: 5px;
+		background-color: #b8daff;
+		height: 20px;
+		display: inline-block;
+		border-radius: 5px;
+		border: 1px solid #99caff;
+	}
+ 	
+	table th {
+		background-color: #b3b3af;
+
+	}
+    /*
+	table, td, th {
+        border: 1px solid black;
+    }
+	*/
+	th, td {
+		padding: 5px;
+	}
+	table tr:nth-child(even){
+		background-color: rgb(226, 226, 226);
+	}
+	.input {
+		margin-bottom: 10px;
+	}
+	.row {
+		/*display: flex;
+		margin: 0; padding: 0;
+	*/
+	}
+	.column1 {
+		flex: 15%; padding: 0px; margin: 0;	
+		position: fixed;
+		top: 10px;
+	}
+	.column2 {
+		flex: 30%; padding: 0px; margin-left: 20%;	
+	}
+	.column3 {
+		flex: 45%; padding: 0px; margin: 0;
+	}
+	select {
+		background-color: #4c7692;
+		color: #fff;
+		font-size: inherit;
+		padding: 5px;
+		padding-right: 1em;	
+		border: 0;
+		border-radius: 3px;
+	}
+	/*Hiding the select arrow for IE10*/
+	select::-ms-expand {
+		display: none;
+	}
+	.addCase {
+		background-color: #008CBA; text-align: center;
+		border-radius: 4px; color:white; padding: 2px 0 2px 0;
+	}
+	.delCase{
+		text-align: center; 
+	}
+	.action-input-width {
+		width: 60px;
+	}
+
+	.underlined	{
+		text-decoration: underline! important;
+	}
+	.no-underlined	{
+		text-decoration: none! important;
+	}
+	.greenButton {
+		border-color: rgb( 144, 187, 63 ) !important; 
+		border-style: solid !important; 
+		border-style: solid !important;
+		border-width: 1px !important; 
+		border-color: rgb( 111, 158, 24 ) !important; 
+		border-radius: 3px !important; 
+		background-color: #90bb3f; 
+		
+	}
+	.nogreenButton {
+		background-color:"";
+	}
+	.error {
+		color: red;
+	}
+	.csrLinks {
+		text-decoration: none;
+		color: #1B5383;
+	}
+	.csrLinks:hover {
+		text-decoration: underline;
+		color: #AF0000;
+	}
+	.tableexport-caption {
+		
+		position: absolute; top: 30%; margin-left:1%; z-index:1;
+	}
+.modal {
+	display: none; /* Hidden by default */
+	position: absolute; /* Stay in place */
+	z-index: 1; /* Sit on top */
+	padding-top: 100px; /* Location of the box */
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  width: 60%;
+  padding: 20px;
+  border: 1px solid #888;
+ 
+  height: auto;
+  overflow-y: scroll;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button-default {
+	display: none;
+}
+.toolbarContainer {
+	width: 100%; background-color: skyblue; display:flex;
+}
+.selBrowser{
+	width: 30%;
+} 
+.selPage{
+	width: 30%;
+} 
+.toolbarExport{
+	width: 30%;
+}
+.tablesContainer{
+	width: 100%; display: flex;
+}
+.elementsTable {
+	width: 50%; margin: 0; padding: 0;
+}
+.ffTable{
+	width: 50%; margin: 0; padding: 0;
+}
+body{
+	margin: 0; padding: 3px;
+}
+#toEx{
+	/*table-layout: fixed;*/
+	width: 50%;
+}
+    </style>
+    <meta charset="UTF-8" />
+    <title>OR Dashboard</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    
+    <!-- Don"t use this in production: -->
+	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+	<!--<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+
+	<link rel="stylesheet" href="https://unpkg.com/tableexport@5.2.0/dist/css/tableexport.min.css">
+	<!-- <link rel="stylesheet" href="https://www.bancopopular.com/cibp-web/css/mibanco-default-scheme.css"> -->
+
+  </head>
+    <body>
+		<!--	<script src="https://raw.githubusercontent.com/SheetJS/js-xlsx/master/dist/xlsx.core.min.js"></script> -->
+		
+    <div id="root"></div>
+    <script type="text/babel">
+    
+    class App extends React.Component {
+        
+        constructor(props){
+            super(props);
+			this.state = {  browserDropdownVal: "select",
+							pageDropdownVal: "select",
+							OR: [],
+							browserNames: [],
+							browserPages: [],
+							cases: [],
+							pageNChilds: [],
+							pagesDropdown: [],
+							elements: [],
+							cases: [],
+							actions: ["Input", "Click", "Verify", "GetValue", "NavigateTo", "WaitFor", "SetTableRow", "Lauch", "Hover"],
+							actionsss: []
+			
+                        };
+            this.constructWebElementHTML = this.constructWebElementHTML.bind(this);                        
+			this.browserChange = this.browserChange.bind(this);
+			this.pageChange = this.pageChange.bind(this);
+			this.readSingleFile = this.readSingleFile.bind(this);
+			this.scrape = this.scrape.bind(this);
+			this.addCase = this.addCase.bind(this);
+			this.delCase = this.delCase.bind(this);
+			this.getAttribute = this.getAttribute.bind(this);
+			this.getChildPages = this.getChildPages.bind(this);
+			this.getChildObjects = this.getChildObjects.bind(this);
+			this.export = this.export.bind(this);
+        }
+		delCase = index => {
+			console.log(index);
+			
+			let casesFiltered = this.state.cases.filter((xCase, idx) => idx !== index);
+
+			this.setState({
+				cases: casesFiltered
+			})
+			
+		}
+		addCase = index => {
+			console.log("case added: " + index);
+
+			//console.log(this.state.pageNChilds[index + 1].childs);
+
+			let caseInfo = 	this.state.cases;
+			caseInfo.push(this.state.pageDropdownVal + " | " + index);
+			
+			console.log(caseInfo);
+
+			this.setState({
+				cases: caseInfo
+			})
+			//console.log(this.state.cases);
+		}
+
+			
+		readSingleFile(e) {
+			// get the selected file name
+			var file = e.target.files[0];
+			// if no file selected, return nothing
+			if (!file) {
+				return;
+			 }
+			
+			// call file reader constructor
+			var reader = new FileReader();
+
+			// reader handler for when the file has been loaded
+			// asynchronous wait
+			reader.onload = (event) => {
+				// contents has the full file contents(in this case the whole XML)
+				var contents = event.target.result;
+				
+				// xmljson is JSON formated XML
+				var xmljson = this.scrape(contents);
+				console.log("OR, browserNames, browserPages");
+				console.log(xmljson);
+
+				// set the state variables with the JSON contents
+				this.setState({
+					OR: xmljson[0], // 'pages' contains an array of the Pages
+					browserNames: xmljson[1], // 'pageNChilds' contains a JSON of each Page child elements(ie: WebElements, WebButtons etc.)
+					browserPages: xmljson[2]
+				});
+				console.log("file has been read");
+				
+			//renderXML(XMLJSON);
+			};
+			
+			// FileReader method to actually read the file
+			reader.readAsText(file);
+		}
+		
+////////////
+
+		getAttribute(attr, qtpObj){
+			var oChildNode = qtpObj.childNodes;
+
+            var cl = oChildNode.length;
+            
+			let sAttributeVal;
+			//let wasAttrFound = "none";
+
+			for (let i = 0; i < cl; i++) {
+			  // Process only element nodes (type 1)
+			  if (oChildNode[i].nodeType == 1) {
+				  //console.log(oChildNode[i].nodeName);
+				if (oChildNode[i].nodeName == "qtpRep:Properties"){
+					var props = oChildNode[i].childNodes;
+					
+					var pl = props.length;
+					
+					for (let b = 0; b < pl; b++){
+						if (props[b].nodeType == 1){
+							//console.log(props[b].getAttribute('Name'));
+							if ( props[b].getAttribute('Name') == attr){
+								sAttributeVal = props[b].textContent.trim();
+								break;
+							}
+						}
+					}
+				}
+			  }
+			}
+			if (typeof(sAttributeVal) ==  "undefined"){
+				return "none";
+			}
+			else {
+				return sAttributeVal;
+			}
+			
+		}
+
+		getChildPages(browserObj, browserName){
+			var browserChilds = browserObj.childNodes;
+			var pagesCount = browserChilds.length;
+			let pi, sChildNodenClass;
+			let aPages = []
+			let oPageStruct = {};
+			let aPageNames = [];
+
+			for (pi = 0; pi < pagesCount; pi++){
+                // Process only element nodes (type 1)
+			  if (browserChilds[pi].nodeType == 1) {
+				  //console.log(childNn[i].nodeName);
+				if (browserChilds[pi].nodeName.toLowerCase() == "qtprep:childobjects"){	
+					var oNodes = browserChilds[pi].childNodes;
+                    let cnLenght=  oNodes.length;
+                    
+					for (let cn=0; cn < cnLenght; cn++){
+						if (oNodes[cn].nodeType == 1){
+							sChildNodenClass = oNodes[cn].getAttribute('Class');
+							if (sChildNodenClass ==  "Page"){
+								oPageStruct.pageName = oNodes[cn].getAttribute("Name");
+
+								aPageNames.push(oNodes[cn].getAttribute("Name"));
+								//console.log("Page: ",oNodes[cn].getAttribute("Name"));
+								
+								let pageObjects = this.getChildObjects(oNodes[cn], browserName);
+								//console.log(pageObjects);
+								oPageStruct.childObjects = pageObjects;
+								//pages.push(oNodes[cn].getAttribute("Name"));
+								aPages.push(oPageStruct);
+							}
+						}
+						oPageStruct = {};
+					}
+
+				}
+			  }
+			}
+			return [aPages, aPageNames];
+		}
+        
+        constructWebElementHTML(sHtmlTag, sText, cssClass){
+            let htmlToRender;
+
+            switch (sHtmlTag.toLowerCase()) {
+                case "div":
+                case "th":
+                case "td":
+                case "tr":
+                case "form":
+                case "li":
+                case "span":
+                case "font":
+                case "label":
+                case "caption":
+                case "p":
+				case "embed":
+					if (cssClass !== ""){
+						htmlToRender = <p className={cssClass}>{sText}</p>
+					}
+					else {
+						htmlToRender = <p>{sText}</p>
+					}
+                    
+                    break;
+                case "b":
+                    htmlToRender = <b>{sText}</b>
+                    break;
+                case "strong":
+                    htmlToRender = <strong>{sText}</strong>
+                    break;
+                case "u":
+                    htmlToRender = <u>{sText}</u>
+                    break;
+                case "i":
+                    htmlToRender = <i>{sText}</i>
+                    break;
+                case "a":
+                    htmlToRender = <a>{sText}</a>
+                    break;
+                case "h1":
+                    htmlToRender = <h1>{sText}</h1>
+                    break;
+                case "h2":
+                    htmlToRender = <h2>{sText}</h2>
+                    break;
+                case "h3":
+                    htmlToRender = <h3>{sText}</h3>
+                    break;
+                default:
+                    htmlToRender = <p>{sText}</p>
+                    console.log(sHtmlTag, " not recognized");
+            }
+            return htmlToRender;
+        }
+		getChildObjects(oPageObject, sBrowserName){
+			let sPageName = oPageObject.getAttribute("Name");
+			var oPageChildObjects = oPageObject.childNodes;
+			var iChildObjCount = oPageChildObjects.length;
+			let oi, sElementClass;
+			let aObjects = [];
+			let oObject = {};
+			let oFrameObject = {};
+			let sWebButtonCSS;
+            let sLinkCSS;
+            var htmlToRender;
+			for (oi = 0; oi < iChildObjCount; oi++){
+				// Process only element nodes (type 1)
+			  if (oPageChildObjects[oi].nodeType == 1) {
+				  //console.log(childNn[i].nodeName);
+				if (oPageChildObjects[oi].nodeName.toLowerCase() == "qtprep:childobjects"){	
+					var oNodes = oPageChildObjects[oi].childNodes;
+					let cnLength=  oNodes.length;
+					for (let cn=0; cn < cnLength; cn++){
+						if (oNodes[cn].nodeType == 1){
+							sElementClass = oNodes[cn].getAttribute('Class');
+							
+							switch (sElementClass) {
+								case "Frame":
+                                    oFrameObject.name = oNodes[cn].getAttribute("Name");
+									oFrameObject.type = "frame";
+									oFrameObject.childObjects = this.getChildObjects(oNodes[cn]);
+									aObjects.push(oFrameObject);
+									oFrameObject = {};
+									break;
+								case "WebElement":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									
+									var htmlTag = this.getAttribute("html tag", oNodes[cn]).trim();
+									oObject.text = this.getAttribute("innertext", oNodes[cn]).trim();
+									
+									var elementCSSClassName = this.getAttribute("class", oNodes[cn]);
+									
+									if ( elementCSSClassName !== "" && elementCSSClassName !== "none"){
+										elementCSSClassName = elementCSSClassName.trim();
+
+										if (elementCSSClassName == "error"){
+											htmlToRender = this.constructWebElementHTML(htmlTag, oObject.text, elementCSSClassName);
+											oObject.html = htmlToRender;										
+										}
+									}
+									else {
+										htmlToRender = this.constructWebElementHTML(htmlTag, oObject.text, "");
+										oObject.html = htmlToRender;
+									}
+	
+									
+									aObjects.push(oObject);
+									oObject = {};
+								//console.log(oNodes[cn].getAttribute("Name"));
+									break;
+								case "Image":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									oObject.text = "";
+									oObject.html = "";
+									aObjects.push(oObject);
+									oObject = {};
+									break;
+								case "WebButton":
+									
+
+									if (sBrowserName !== "CSR"){
+										sWebButtonCSS = "greenButton";
+									}
+									else {
+										sWebButtonCSS = "nogreenButton";
+									}
+
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									oObject.text = this.getAttribute("value", oNodes[cn]);
+									oObject.html = <input className={sWebButtonCSS} type="submit" value={oObject.text} />
+									aObjects.push(oObject);
+									oObject = {};
+								
+									break;
+								case "WebList":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									aObjects.push(oObject);
+									oObject = {};
+								
+									break;
+								case "WebRadioGroup":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									aObjects.push(oObject);
+									oObject = {};
+								
+									break;
+								case "Link":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									oObject.text = this.getAttribute("text", oNodes[cn]);
+
+									if ( sBrowserName == "Mi Banco"){
+										if (sPageName == "Login"){
+											sLinkCSS = "underlined";
+										}
+										else {
+											sLinkCSS = "no-underlined"
+										}
+										
+										oObject.html = <a className={sLinkCSS}>{oObject.text}</a>;
+									}
+									else if ( sBrowserName == "CSR"){
+										sLinkCSS = "csrLinks";
+										oObject.html = <a className={sLinkCSS}>{oObject.text}</a>;
+									}
+
+									
+									aObjects.push(oObject);
+									oObject = {};
+
+									break;
+								case "WebEdit":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									aObjects.push(oObject);
+									oObject = {};
+
+									break;
+								case "WebTable":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									aObjects.push(oObject);
+									oObject = {};
+
+									break;
+								case "WebCheckBox":
+									oObject.name = oNodes[cn].getAttribute("Name");
+									oObject.type = "element";
+									aObjects.push(oObject);
+									oObject = {};
+
+									break;
+								default:
+									console.log("you entered a very weird element: " + sElementClass)
+									console.log("node:", oNodes[cn]);
+									console.log("page: ", oPageObject);
+							}	
+						} // if
+					}
+				}
+			  }
+			}
+			return aObjects;
+		}
+////////////
+		scrape(xml) {
+			// variables declarations & assignments
+			var txt, pageChilds, objClass, childName, nextObj;// = "";
+			var parentChildObjs = new Object();
+			var treeArr = [];
+			var childsArr = [];
+			var childsArrName = [];
+			var onlyPageName = [];
+			var objIterator = 0;
+		    var isIframe = false;
+			var iFrameName = "";
+			let OR = [];
+			let ORStruct = {};
+			let parser = new DOMParser();
+			let xmlDoc = parser.parseFromString(xml,"text/xml");
+			var qtpObjects = xmlDoc.getElementsByTagName('qtpRep:BrowserObject');
+			
+			//console.log(`cantidad de objetos: ${qtpObjects.length}`);
+			
+			var allObjsIdx = 0
+			let bi;
+			let bName;
+			let browserNames = [];
+			let browserPages = [];
+            let browserName;
+            
+			for (bi=0; bi < qtpObjects.length; bi++){
+
+				browserName = qtpObjects[bi].getAttribute('Name');
+				browserNames.push(browserName);
+
+				ORStruct.browserName = browserName;
+				//console.log("Browser:", qtpObjects[bi].getAttribute('Name'));
+				let fetchedPages = this.getChildPages(qtpObjects[bi], browserName);
+				//[pages->array of objects, pageNames->array of strings];
+				browserPages.push(fetchedPages[1]);
+
+				ORStruct.pages = fetchedPages[0];
+				OR.push(ORStruct);
+
+				ORStruct = {};
+			}
+			//console.log(OR);
+
+			return [OR, browserNames, browserPages]; // this array'[]' will be returned by the function. The array will contain two elements:
+					// 'onlyPageName': array containing only the name of the Pages found
+					// 'treeArr': array containing the Page name, Page class('Page') and child elements 
+	  
+		}// function
+
+		pageChange(event){
+			console.log("pageChange occured", event.target.value);
+			this.setState({
+				pageDropdownVal: event.target.value
+			})
+			//browserDropdownVal: "select",
+			//				pageDropdownVal: "select",
+			console.log(this.state.browserDropdownVal + ": " + event.target.value);
+
+			let selectedBrowser = this.state.browserDropdownVal;
+			let selectedPage = event.target.value;
+			let allPages;
+
+			let OR = this.state.OR;
+			let ORLength = OR.length;
+			let pageIitem, browserItem;
+
+			for (let ORi = 0; ORi < ORLength; ORi++){
+				browserItem = OR[ORi];
+				if (browserItem.browserName == selectedBrowser){
+					allPages = OR[ORi].pages;
+					for (let Pi = 0; Pi < allPages.length; Pi++){
+						if (allPages[Pi].pageName == selectedPage){
+							this.setState({
+								elements: allPages[Pi].childObjects
+							});
+							break;
+						}
+					}
+				}
+			}
+//			.browserName
+//				.pages
+//					.pageName
+//						.childObjects
+		}
+
+        browserChange(event){
+			let selectedBrowser = event.target.value;
+			//browserPages
+			let arrayIndex;
+			for (let i = 0; i < this.state.browserNames.length; i++){
+				if (this.state.browserNames[i] == selectedBrowser){
+					arrayIndex = i;
+					break;
+				}
+			}
+			
+			console.log("arrayIndex", arrayIndex);
+			console.log("browserPages[arrayIndex]", this.state.browserPages[arrayIndex]);
+            this.setState({
+				browserDropdownVal: event.target.value,
+				pagesDropdown: this.state.browserPages[arrayIndex]
+			});
+		
+        }
+		
+		export(){
+			var modal = document.getElementById("modal");
+				modal.style.display = "block";
+
+			var table = document.getElementById("toEx");
+			var rows = table.rows.length;//rows[2].cells[0];
+			var actions = [];
+			var sAction, sObject, sInput, sOutput;
+
+			for (let r = 1; r < rows; r++){
+
+				sAction = table.rows[r].cells[0].getElementsByTagName("select")[0].value;
+				sObject =  table.rows[r].cells[1].innerText;
+				sInput = table.rows[r].cells[2].getElementsByTagName("textarea")[0].value;
+				sOutput = table.rows[r].cells[3].getElementsByTagName("textarea")[0].value;
+
+				//console.log(action);
+				actions.push(
+				<tr key={r}>
+						<td>{sAction}</td>
+						<td>{sObject}</td>
+						<td>{sInput}</td>
+						<td>{sOutput}</td>
+				</tr>
+				);
+			}
+			this.setState({
+				actionsss: actions
+			})
+
+			var exportBtns = document.getElementsByClassName("button-default"); 
+			var btnsFound = exportBtns.length;
+
+			if (btnsFound > 0){
+				for (var i = 0; i < btnsFound; i++){
+					exportBtns[0].remove();
+				}
+			}
+			setTimeout(function(){
+				//do what you need here
+				TableExport(document.getElementById("toExport"), {
+					formats: ["xlsx"]
+				});
+			}, 2000);		
+	
+		}
+        render() {
+			
+            return (
+				<div>
+					<Modal actionsss={this.state.actionsss}/>
+					<div className="row">
+						
+							<div className="toolbarContainer">
+								<div className="input">
+									<div>
+										<h3 className="bluelabel">Select the XML file</h3>
+									</div>
+									<input ref="input_reader" onChange={this.readSingleFile} type="file" id="file-input" />
+								</div>
+								<div className="selBrowser">
+									<h3>Select Browser name</h3>
+									<Dropdown dval={this.state.browserDropdownVal} items={this.state.browserNames} change={this.browserChange} 
+										disabledFlag={false} />
+								</div>
+								<div className="selPage"> 
+									<h3>Select Page name</h3>
+									<Dropdown dval={this.state.pageDropdownVal} items={this.state.pagesDropdown} change={this.pageChange}
+										disabledFlag={false} />
+								</div>
+								<div className="toolbarExport">
+									<h3>Export</h3>
+									<input type="button" value="export" onClick={this.export}/>	
+								</div>
+							</div>
+						<div className="tablesContainer">
+							<div className="elementsTable">
+								<Elements tableChilds={this.state.elements} addCase={this.addCase}/>
+							</div>
+							<div className="ffTable">
+								<CaseTable delCase={this.delCase} tableChilds={this.state.cases} actions={this.state.actions} />
+							</div>
+						</div>	
+					</div>
+				</div>
+				
+            )
+        }
+    }
+	class ExportConfirmation extends React.Component{
+		//<CaseTable delCase={this.delCase} tableChilds={this.state.cases} actions={this.state.actions} />
+			render(){
+				return (
+					<table id="toExport" className="tblCSS">
+                    <thead>
+                        <tr>
+                            <th>Action</th><th>Object</th><th>Input</th><th>Output</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.props.actionsss}
+                    </tbody>
+                </table>
+				)
+			}
+		}
+    class Elements extends React.Component{
+        render(){
+			this.addCase = this.props.addCase;
+            //console.log(this.props.tableChilds);
+			let oAllElements = this.props.tableChilds;
+			let iNumOfElem = this.props.tableChilds.length;
+			let oElement;
+			let oElementsToDisplay = [];
+			let oFrameChildObjects;
+			let iFrameChOCount;
+			let sFrameName;
+			let sNameToAddCase;
+			var iGlobalKeyCounter = 0;
+
+			for (let el=0; el < iNumOfElem; el++){
+				iGlobalKeyCounter+=1
+
+				if (oAllElements[el].type == "frame"){
+					sFrameName = oAllElements[el].name;
+					iFrameChOCount = oAllElements[el].childObjects.length;
+					oFrameChildObjects = oAllElements[el].childObjects;
+					
+					for (let fco=0; fco < iFrameChOCount; fco++){
+						iGlobalKeyCounter+=1
+
+						sNameToAddCase = sFrameName + " | " + oFrameChildObjects[fco].name;
+
+						oElementsToDisplay.push(
+							<tr key={iGlobalKeyCounter}>
+								<td>{sFrameName + " | " + oFrameChildObjects[fco].name}<hr />{"text: " + oFrameChildObjects[fco].text}<hr />{oFrameChildObjects[fco].html}</td>
+								<td><div className="addCase" onClick={() => this.addCase(sNameToAddCase)}>Add</div></td>
+							</tr>
+						);
+					}
+				}
+				else {
+					oElementsToDisplay.push(
+						<tr key={iGlobalKeyCounter}>
+							<td>{oAllElements[el].name}<hr />{"text: " + oAllElements[el].text}<hr />{oAllElements[el].html}</td>
+							<td><div className="addCase" onClick={() => this.addCase(oAllElements[el].name)}>Add</div></td>
+						</tr>
+					);
+				}
+			}
+
+            return (
+                <table className="tblCSS">
+                    <thead>
+                        <tr>
+                            <th>Element Name</th><th>Add Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {oElementsToDisplay}
+                    </tbody>
+                </table>
+            )
+        }
+    }
+    class Dropdown extends React.Component {
+        
+        render() {
+            this.change = this.props.change;
+
+            let names = this.props.items.map((name, i) => 
+                <option key={i}>{name}</option>
+            );
+			names.unshift( <option key={"select"}>select</option> );
+            return (
+                    <div> 
+                        <select disabled={this.props.disabledFlag} onChange={this.change} >
+                            {names}
+                        </select>
+                        <p></p>
+                    </div>
+            )
+        }
+    }
+	class Modal extends React.Component {
+		closeModal(){
+			document.getElementById("modal").style.display = 'none';
+		}
+		exportXLS(){
+			var exportBtns = document.getElementsByClassName("button-default");
+			var modalCloseBtn = document.getElementById("modalClose");
+			//document.getElementById("exportNew").addEventListener('click',function(event){
+				setTimeout(function(){
+					exportBtns[0].click();
+					modalCloseBtn.click();
+				}, 1000);
+				//exportBtns[0].click();
+				//modalCloseBtn.click();
+				//event.preventDefault();
+			//})
+		}
+
+		render(){
+			const iStyle= {
+				marginRight: '0px',
+			};
+
+			return (
+				<div id="modal" className="modal">
+					<div className="modal-content">
+						<i style={iStyle}>{"Please confirm export "}</i>
+						<span id="modalClose" onClick={this.closeModal} className="close">&times;</span>
+						<input onClick={this.exportXLS} id="exportNew" type="button" value="Export"/>
+						<ExportConfirmation actionsss={this.props.actionsss} />
+				</div>
+				</div>
+			)
+		}
+	}
+
+	class CaseTable extends React.Component{
+        render(){
+			this.delCase = this.props.delCase;
+			
+			let actions = this.props.actions.map((e, i) =>
+				<option key={i}>{e}</option>
+			);
+            //console.log(this.props.tableChilds);
+            let toDisplay = this.props.tableChilds.map((e, i) => 
+                <tr key={i}>
+					<td><select>{actions}</select></td>
+
+                    <td><div>{e}</div></td>
+					
+					<td><textarea className="action-input-width"></textarea></td>
+					<td><textarea className="action-input-width"></textarea></td>
+					<td className="delCase" onClick={() => this.delCase(i)}>
+						<div className="trashRound">
+							<span className="close">&times;</span>
+						</div>					
+					</td>
+                </tr>
+            );
+            return (
+                <table  id="toEx">
+                    <thead>
+                        <tr>
+                            <th>Action</th><th>Object</th><th>Input</th><th>Output</th><th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {toDisplay}
+                    </tbody>
+                </table>
+            )
+        }
+    }
+
+      ReactDOM.render(
+        <App />,
+        document.getElementById('root')
+      );
+
+    </script>
+	<script src="https://rawgit.com/SheetJS/js-xlsx/master/dist/xlsx.core.min.js"></script>
+	<script src="https://rawgit.com/clarketm/FileSaver.js/master/FileSaver.min.js"></script>
+	<script src="https://rawgit.com/clarketm/TableExport/master/src/stable/js/tableexport.min.js"></script>
+  </body>
 </html>
