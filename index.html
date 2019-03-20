@@ -610,7 +610,7 @@ body{
 			let ORStruct = {};
 			let parser = new DOMParser();
 			let xmlDoc = parser.parseFromString(xml,"text/xml");
-			var qtpObjects = xmlDoc.getElementsByTagName('qtpRep:BrowserObject');
+			var qtpObjects = xmlDoc.getElementsByTagName('qtpRep:Object');
 			
 			//console.log(`cantidad de objetos: ${qtpObjects.length}`);
 			
@@ -620,22 +620,27 @@ body{
 			let browserNames = [];
 			let browserPages = [];
             let browserName;
-            
+			var sClassAttribute;
 			for (bi=0; bi < qtpObjects.length; bi++){
+				
+				sClassAttribute = qtpObjects[bi].getAttribute('Class');
+				
+				if ( sClassAttribute == "Browser") {
+					
+					browserName = qtpObjects[bi].getAttribute('Name');
+					browserNames.push(browserName);
 
-				browserName = qtpObjects[bi].getAttribute('Name');
-				browserNames.push(browserName);
+					ORStruct.browserName = browserName;
+					//console.log("Browser:", qtpObjects[bi].getAttribute('Name'));
+					let fetchedPages = this.getChildPages(qtpObjects[bi], browserName);
+					//[pages->array of objects, pageNames->array of strings];
+					browserPages.push(fetchedPages[1]);
 
-				ORStruct.browserName = browserName;
-				//console.log("Browser:", qtpObjects[bi].getAttribute('Name'));
-				let fetchedPages = this.getChildPages(qtpObjects[bi], browserName);
-				//[pages->array of objects, pageNames->array of strings];
-				browserPages.push(fetchedPages[1]);
+					ORStruct.pages = fetchedPages[0];
+					OR.push(ORStruct);
 
-				ORStruct.pages = fetchedPages[0];
-				OR.push(ORStruct);
-
-				ORStruct = {};
+					ORStruct = {};
+				}
 			}
 			//console.log(OR);
 
